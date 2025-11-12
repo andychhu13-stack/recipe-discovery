@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Image from "next/image";
 import { XMarkIcon, PlayCircleIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import type { Meal } from "@/lib/types";
@@ -34,9 +34,37 @@ function extractIngredients(meal: Meal): Array<{ ingredient: string; measure: st
 export function RecipeDetail({ meal, onClose, isBookmarked, onToggleBookmark }: RecipeDetailProps) {
   const ingredients = useMemo(() => extractIngredients(meal), [meal]);
 
+  // Handle Esc key press
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
   return (
-    <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-lg">
-      <div className="relative flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl shadow-brand-500/20">
+    <section
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-6 backdrop-blur-lg"
+      onClick={onClose}
+    >
+      <div
+        className="relative flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl shadow-brand-500/20"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           onClick={onClose}
@@ -119,20 +147,17 @@ export function RecipeDetail({ meal, onClose, isBookmarked, onToggleBookmark }: 
 
             <div>
               <h3 className="text-lg font-semibold text-white">Instructions</h3>
-              <ol className="mt-2 space-y-3 text-sm leading-6 text-slate-200">
+              <div className="mt-2 space-y-3 text-sm leading-6 text-slate-200">
                 {meal.strInstructions
                   .split(/\r?\n/)
                   .map((line) => line.trim())
                   .filter(Boolean)
                   .map((line, index) => (
-                    <li key={`${index}-${line}`} className="flex gap-3">
-                      <span className="mt-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500/20 text-xs font-semibold text-brand-400">
-                        {index + 1}
-                      </span>
-                      <p>{line}</p>
-                    </li>
+                    <p key={`${index}-${line}`} className="text-slate-200">
+                      {line}
+                    </p>
                   ))}
-              </ol>
+              </div>
             </div>
           </div>
         </div>
