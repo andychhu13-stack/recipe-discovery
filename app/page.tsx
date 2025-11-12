@@ -63,6 +63,7 @@ export default function Page() {
       
       try {
         const results = await searchMeals(sanitized);
+        console.log("results", results);
         setMeals(results);
         if (results.length === 0) {
           setError("No recipes found. Try another ingredient or cuisine.");
@@ -76,6 +77,12 @@ export default function Page() {
     },
     []
   );
+
+  useEffect(() => {
+    if (query === "") {
+      handleSearch("");
+    }
+  }, [query, handleSearch]);
 
   const handleToggleBookmark = useCallback((meal: Meal) => {
     setBookmarks((prev) => {
